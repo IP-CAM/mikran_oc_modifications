@@ -130,15 +130,9 @@ class mikran_ControllerCheckoutCart extends ControllerCheckoutCart {
 					}
 				}
 
-                $rate_id = $this->tax->setProductTax($product['tax_class_id']);
-                $rates = $this->tax->getRates($price,$product['tax_class_id']);
-                #var_dump($product['tax_class_id']);
+                $tax_class_id = ($product['tax_class_id']);
 
-                #var_dump($price);
-                #var_dump($unit_price = $this->tax->calculate($product['price'], $product['tax_class_id'], $this->config->get('config_tax')));
-                #var_dump($product['tax_class_id']);
-
-                //var_dump($this->cart->getTaxes());
+                $rates = $this->getUnitAvgTaxRates($unit_price,$product['tax_class_id']);
 
 				$data['products'][] = array(
 					'cart_id'   => $product['cart_id'],
@@ -152,8 +146,9 @@ class mikran_ControllerCheckoutCart extends ControllerCheckoutCart {
 					'reward'    => ($product['reward'] ? sprintf($this->language->get('text_points'), $product['reward']) : ''),
 					'price'     => $price,
                     //Added extra fields for rendering in template
-                    'tax_amount'=> $this->currency->format($rates[$rate_id]['amount']*$product['quantity'], $this->session->data['currency']),
-                    'price_total'=>$this->currency->format($rates[$rate_id]['amount']+$price, $this->session->data['currency']),
+                    'tax_amount'=> $this->currency->format($rates['avg_tax_amount']*$product['quantity'], $this->session->data['currency']),
+                    'tax_rate'  => $rates['avg_tax_rate'],
+                        'price_total'=>$this->currency->format(($rates['avg_tax_amount']*$product['quantity'])+($unit_price*$product['quantity']), $this->session->data['currency']),
 					'total'     => $total,
 					'href'      => $this->url->link('product/product', 'product_id=' . $product['product_id'])
 				);
@@ -270,5 +265,26 @@ class mikran_ControllerCheckoutCart extends ControllerCheckoutCart {
 
 			$this->response->setOutput($this->load->view('error/not_found', $data));
 		}
+    }
+
+    //This should be somewhere in the model but tax model is final so there is no way to extend it                
+	public function getUnitAvgTaxRates($unit_price, $tax_class_id) {
+        $amount = 0;
+
+        $tax_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "tax_rule WHERE tax_class_id = '" . (int)$tax_class_id . "'");
+
+        foreach ($tax_query->rows as $tax_rule) {
+            $tax_rate_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "tax_rate WHERE tax_rate_id = '" . (int)$tax_rule['tax_rate_id'] . "'");
+            foreach ($tax_rate_query->rows as $tax_rate) {
+
+                if ($tax_rate['type'] == 'F') {
+					$amount += $tax_rate['rate'];
+				} elseif ($tax_rate['type'] == 'P') {
+					$amount += ($unit_price / 100 * $tax_rate['rate']);
+				}
+            }            
+        }
+        $avg_tax_rate = array('price'=>$unit_price,'avg_tax_amount'=>$amount,'avg_tax_rate'=>$amount/$unit_price*100);
+        return $avg_tax_rate; 
     }
 }
