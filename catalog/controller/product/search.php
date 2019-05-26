@@ -1,24 +1,7 @@
 <?php
 class mikran_ControllerProductSearch extends ControllerProductSearch {
-    protected function get_category_path($product_id) {
-        $categories = $this->model_catalog_product->getCategories($product_id);
-        $first_cat = $categories[0]['category_id'];
-        $retval = array();
-
-        $path = function($catid) use (&$path,&$retval) {
-            $category_info = $this->model_catalog_category->getCategory($catid);
-            $retval[] = $category_info['category_id'];
-            if ($category_info['parent_id'] > 0) {
-                $path($category_info['parent_id']);
-            }
-            return implode('_',array_reverse($retval));
-        };
-
-        return $path($first_cat);
-    }
-    
     protected function redirect_plu($plu) {
-        $path = $this->get_category_path($plu);
+        $path = $this->model_catalog_product->getCategoryPath($plu);
         $this->response->redirect($this->url->link('product/product', 'product_id=' . $plu.'&path='.$path.'&search='.$plu));
     }
     
