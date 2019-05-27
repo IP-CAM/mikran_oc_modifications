@@ -241,7 +241,7 @@ class mikran_ControllerProductSearch extends ControllerProductSearch {
 					'minimum'     => $result['minimum'] > 0 ? $result['minimum'] : 1,
 					'rating'      => $result['rating'],
 					#'href'        => $this->url->link('product/product', 'product_id=' . $result['product_id'] . $url.'&path='.$this->get_category_path($result['product_id'])),
-                    'href'        => $this->url->link('product/product', 'product_id=' . $result['product_id'] .'&path='.$this->get_category_path($result['product_id'])),
+                    'href'        => $this->url->link('product/product', 'product_id=' . $result['product_id'] .'&path='.$this->model_catalog_product->getCategoryPath($result['product_id'])),
 				);
 			}
 
