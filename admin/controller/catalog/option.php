@@ -1,6 +1,5 @@
 <?php
 class mikran_ControllerCatalogOption extends ControllerCatalogOption {
-
 	protected function getForm() {
 		$data['text_form'] = !isset($this->request->get['option_id']) ? $this->language->get('text_add') : $this->language->get('text_edit');
 
@@ -129,4 +128,55 @@ class mikran_ControllerCatalogOption extends ControllerCatalogOption {
 
 		$this->response->setOutput($this->load->view('catalog/option_form', $data));
 	}
+
+    protected function validateForm() {
+
+        parent::validateForm();
+
+        //Private members are so so so STUPID as well as PHP is
+        $r = new ReflectionObject($this);
+        $p = $r->getParentClass()->getProperty('error');
+        $p->setAccessible(true);
+        $error = $p->getValue($this);
+
+        $this->load->model('localisation/language');
+        $languages = $this->model_localisation_language->getLanguages();
+        foreach($languages as $code=>$language) {
+            if(strcmp($code,'pl-pl') != 0) {
+                unset($error['name'][$language['language_id']]);
+                //unset($error['option_value'][$language['language_id']]);
+            }
+        }
+
+        $pl = $this->model_localisation_language->getLanguageByCode('pl-pl');
+        $pl_id = $pl['language_id'];
+
+        foreach($error['option_value'] as $option_id=>$option_value) {
+            foreach($languages as $code=>$language) {
+                if(isset($option_value[$language['language_id']])) {
+                    if(strcmp($code,'pl-pl') != 0) {
+                        unset($error['option_value'][$option_id][$language['language_id']]);
+                    }
+                }
+            }
+        }
+
+        foreach($error['option_value'] as $option_id=>$option_value) {
+            if(empty($option_value)) {
+                unset($error['option_value'][$option_id]);
+            }
+        }
+        
+        if(empty($error['name'])) {
+            unset($error['name']);
+        }
+        if(empty($error['option_value'])) {
+            unset($error['option_value']);
+        }
+
+        //Again thank you fucking PHP
+        $p->setValue($this,$error);
+
+        return !$error;
+    }
 }
