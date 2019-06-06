@@ -10,11 +10,13 @@ class mikran_ModelCatalogProduct extends ModelCatalogProduct {
 
         $path = function($catid) use (&$path,&$retval) {
             $category_info = $this->model_catalog_category->getCategory($catid);
-            $retval[] = $category_info['category_id'];
-            if ($category_info['parent_id'] > 0) {
-                $path($category_info['parent_id']);
+            if($category_info) {
+                $retval[] = $category_info['category_id'];
+                if ($category_info['parent_id'] > 0) {
+                    $path($category_info['parent_id']);
+                }
+                return implode('_',array_reverse($retval));
             }
-            return implode('_',array_reverse($retval));
         };
 
         return $path($first_cat);
@@ -30,11 +32,12 @@ class mikran_ModelCatalogProduct extends ModelCatalogProduct {
     }
 
     public function getProductMeta($product_id) {
-        $query = $this->db->query("SELECT p.product_id, pd.meta_title from " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id) WHERE p.product_id = '" . (int)$product_id . "' AND pd.language_id='" . (int)$this->config->get('config_language_id') . "'");
+        $query = $this->db->query("SELECT p.product_id, pd.meta_title, pd.name from " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id) WHERE p.product_id = '" . (int)$product_id . "' AND pd.language_id='" . (int)$this->config->get('config_language_id') . "'");
         if ($query->num_rows) {
             return array(
                 'product_id'       => $query->row['product_id'],
                 'meta_title'       => $query->row['meta_title'],
+                'name'             => $query->row['name'],
             );
         }
     }

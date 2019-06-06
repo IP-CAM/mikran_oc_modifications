@@ -4,6 +4,12 @@ class mikran_ControllerProductSearch extends ControllerProductSearch {
         $path = $this->model_catalog_product->getCategoryPath($plu);
         $this->response->redirect($this->url->link('product/product', 'product_id=' . $plu.'&path='.$path.'&search='.$plu));
     }
+
+    #NOT Working ? No call is comming, why ?
+    public function preRender($template_buffer,$template_name,&$data) {
+        //var_dump($data['products']);
+        //var_dump('prerender');
+    }
     
 	public function index() {
 		$this->load->language('product/search');
