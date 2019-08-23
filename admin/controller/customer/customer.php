@@ -24,7 +24,7 @@ class mikran_ControllerCustomerCustomer extends ControllerCustomerCustomer {
 
         $data['orders'] = array();
 
-        $results = $this->model_sale_order->getOrders(array('filter_customerid' => $this->request->get['customer_id'], 'sort' => "o.date_added", 'order' => 'DESC','limit'=>10,'start'=>($page-1) * 10));
+        $results = $this->model_sale_order->getOrdersByCustomerId($this->request->get['customer_id'], array('sort' => "o.date_added", 'order' => 'DESC','limit'=>10,'start'=>($page-1) * 10));
 
         foreach ($results as $result) {
             

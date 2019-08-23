@@ -41,4 +41,9 @@ class mikran_ModelCatalogProduct extends ModelCatalogProduct {
             );
         }
     }
+
+    public function getDateModified($product_id) {
+        $query = $this->db->query("SELECT date_modified  from " . DB_PREFIX . "product WHERE product_id = '" . (int)$product_id . "'");
+        return $query->row['date_modified'];
+    }
 }

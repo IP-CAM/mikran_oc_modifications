@@ -5,12 +5,19 @@ class mikran_ControllerProductProduct extends ControllerProductProduct {
         $this->load->language('product/product');
         $this->load->model('catalog/product');
 
+        $product_id = $data['product_id'];
+        
+
         //preRender is called on all controller actions, like review and so on, so lets filter one we need
         if($this->request->get['route'] == 'product/product') {
             #not path info on product page - lets inject it and create missing breadcrumbs
             if(!isset($this->request->get['path'])) {
 
                 $product_id = $data['product_id'];
+
+                //we need last modification date to display on theme bottom
+                $data['date_modified'] = $this->model_catalog_product->getDateModified($product_id);
+                $data['text_date_modified'] = $this->language->get('text_date_modified');
                 
                 $breadcrumbs[] = array_shift($data['breadcrumbs']);
                 

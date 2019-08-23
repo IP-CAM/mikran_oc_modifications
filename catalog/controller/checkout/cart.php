@@ -132,7 +132,8 @@ class mikran_ControllerCheckoutCart extends ControllerCheckoutCart {
 
                 $tax_class_id = ($product['tax_class_id']);
 
-                $rates = $this->getUnitAvgTaxRates($unit_price,$product['tax_class_id']);
+                //$rates = $this->getUnitAvgTaxRates($unit_price,$product['tax_class_id']);
+                $rates = $this->getUnitAvgTaxRates($product['price'],$product['tax_class_id']);
 
 				$data['products'][] = array(
 					'cart_id'   => $product['cart_id'],
@@ -144,12 +145,14 @@ class mikran_ControllerCheckoutCart extends ControllerCheckoutCart {
 					'quantity'  => $product['quantity'],
 					'stock'     => $product['stock'] ? true : !(!$this->config->get('config_stock_checkout') || $this->config->get('config_stock_warning')),
 					'reward'    => ($product['reward'] ? sprintf($this->language->get('text_points'), $product['reward']) : ''),
-					'price'     => $price,
+                    'price'     => $this->currency->format($product['price'],$this->session->data['currency']),
+					//'price'     => $price,
                     //Added extra fields for rendering in template
                     'tax_amount'=> $this->currency->format($rates['avg_tax_amount']*$product['quantity'], $this->session->data['currency']),
                     'tax_rate'  => $rates['avg_tax_rate'],
-                        'price_total'=>$this->currency->format(($rates['avg_tax_amount']*$product['quantity'])+($unit_price*$product['quantity']), $this->session->data['currency']),
-					'total'     => $total,
+                    'price_total'=>$this->currency->format(($rates['avg_tax_amount']*$product['quantity'])+($product['price']*$product['quantity']), $this->session->data['currency']),
+					//'total'     => $total,
+                    'total'     => $this->currency->format($product['price'] * $product['quantity'], $this->session->data['currency']),
 					'href'      => $this->url->link('product/product', 'product_id=' . $product['product_id'])
 				);
 			}
@@ -234,9 +237,9 @@ class mikran_ControllerCheckoutCart extends ControllerCheckoutCart {
 			if ($files) {
 				foreach ($files as $file) {
 					$result = $this->load->controller('extension/total/' . basename($file, '.php'));
-					
+
 					if ($result) {
-						$data['modules'][] = $result;
+						$data['modules'][basename($file,'.php')] = $result;
 					}
 				}
 			}
